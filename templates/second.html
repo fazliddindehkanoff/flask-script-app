@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Dropdown Cards</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    .card {
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      cursor: pointer;
+    }
+
+    .card-body {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <form method="POST" action="/next">
+      {% for script_data in context %}
+      <div class="card mt-5">
+        <div class="card-header bg-primary" style="color: white;" onclick="toggleDropdown('{{ script_data.script }}')">
+          {{ script_data.script }}
+        </div>
+        <div class="card-body" id="{{ script_data.script }}">
+          {% for option in script_data.options %}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="{{ option.sku }}" name="{{ option.file_name }}|{{ option.sku }}">
+            <label class="form-check-label" for="{{ sku }}">
+              {{ option.product }}
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+
+      <button type="submit" class="btn btn-primary">Next</button>
+    </form>
+  </div>
+
+  <script>
+    function toggleDropdown(dropdownId) {
+      var dropdown = document.getElementById(dropdownId);
+      var display = dropdown.style.display;
+      dropdown.style.display = (display === '' || display === 'none') ? 'block' : 'none';
+    }
+  </script>
+</body>
+
+</html>

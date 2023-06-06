@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Python Scripts</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>List of Python Scripts</h1>
+        <form id="form" action="/second" method="post">
+            <input id="runned-scripts" type="hidden" name="scripts">
+        </form>
+        <table class="table mt-3">
+            <thead>
+                <tr>
+                    <th scope="col">Category</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for script in scripts %}
+                <tr>
+                    <td>{{ script.name }}</td>
+                    <td id="{{ script.filename }}">{{ script.status }}</td>
+                    <td>
+                        <button class="btn btn-primary run-script-btn" data-script="{{ script.filename }}" onclick="disableNextBtn()">
+                            Run
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button id="nextBtn" class="btn btn-primary" onclick="submitForm()">
+            Next
+        </button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function disableNextBtn() {
+            var nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = true;
+            nextBtn.classList.add("disabled")
+            console.log("ishlashi kerak");
+        }
+
+        function checkStatusAndDisableButton() {
+            console.log("this function should be called");
+            var tds = document.getElementsByClassName('status');
+            var nextBtn = document.getElementById('nextBtn');
+            var runningStatusFound = false;
+
+            for (var i = 0; i < tds.length; i++) {
+                var status = tds[i].innerText;
+                if (status === 'Running') {
+                    runningStatusFound = true;
+                    break;
+                }
+            }
+
+            if (runningStatusFound) {
+                console.log("Bu yer ishlayabdi !");
+                nextBtn.classList.add("disabled");
+                nextBtn.prop("disabled", true);
+            } else {
+                console.log("Bu ishladimi?");
+                nextBtn.classList.remove("disabled");
+                nextBtn.disabled = false;
+            }
+        }
+
+        function submitForm() {
+            var form = document.getElementById("form");
+            var dataInput = document.getElementById("runned-scripts");
+            dataInput.value = runnedScripts;
+            form.submit();
+        }
+
+        var runnedScripts = [];
+
+        $(document).ready(function () {
+            $('.run-script-btn').click(function () {
+                var btn = $(this);
+                var scriptFilename = btn.data('script');
+                var status = document.getElementById(scriptFilename);
+
+                console.log(status);
+
+                btn.prop("disabled", true);
+                status.innerText = "Running";
+
+                $.ajax({
+                    url: '/run_script',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 'script_filename': scriptFilename }),
+                    success: function (response) {
+                        console.log(response.message);
+                        var respondedStatus = response.script.status;
+                        status.innerText = respondedStatus;
+
+                        if (respondedStatus === "Finished successfully") {
+                            runnedScripts.push(response.script.filename);
+                        }
+                        checkStatusAndDisableButton();
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+
+            checkStatusAndDisableButton();
+        });
+    </script>
+
+</body>
+
+</html>
